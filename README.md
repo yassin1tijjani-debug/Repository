@@ -1,5 +1,5 @@
--- DRAGON ZONE HUB V30 🐉 - الـنـسـخـة الـشـامـلـة الـنـهـائـيـة
--- [ تم إصلاح مشكلة اللاج وتعديل حذف حواجز VIP بنجاح ]
+-- DRAGON ZONE HUB V30 🐉 - الـنـسـخـة الـمـصـلـحـة (قـسـم الإعـدادات)
+-- [ تـم إصـلاح جـمـيـع أزرار الإعـدادات والـتـنـقـل وبـدون أي حـذف ]
 
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
@@ -72,7 +72,7 @@ end
 local AirWalkBtn = CreateButton("المشي على الهواء: OFF", UDim2.new(0.05, 0, 0.13, 0), Color3.fromRGB(180, 0, 0), MainFrame)
 AirWalkBtn.Name = "AirWalkBtn"
 local FastBtn = CreateButton("أخذ سريع (Instant E)", UDim2.new(0.05, 0, 0.22, 0), Color3.fromRGB(0, 140, 0), MainFrame)
-local VIPBtn = CreateButton("حذف حواجز VIP 🔓", UDim2.new(0.05, 0, 0.31, 0), Color3.fromRGB(200, 140, 0), MainFrame)
+local VIPBtn = CreateButton("فتح أبواب VIP", UDim2.new(0.05, 0, 0.31, 0), Color3.fromRGB(200, 140, 0), MainFrame)
 local OpenEvtBtn = CreateButton("مراقب الأحداث ⏰ >", UDim2.new(0.05, 0, 0.45, 0), Color3.fromRGB(0, 150, 150), MainFrame)
 local OpenTPBtn = CreateButton("قسم التنقل 🚀 >", UDim2.new(0.05, 0, 0.58, 0), Color3.fromRGB(0, 100, 200), MainFrame)
 local OpenESPBtn = CreateButton("إعدادات الكشف ESP 👁️ >", UDim2.new(0.05, 0, 0.71, 0), Color3.fromRGB(120, 0, 120), MainFrame)
@@ -140,44 +140,56 @@ local GoPosBtn = CreateButton("العودة للمحفوظ", UDim2.new(0.05,0,0.
 SavePosBtn.MouseButton1Click:Connect(function() SavedLocation = LocalPlayer.Character.HumanoidRootPart.CFrame; SavePosBtn.Text = "✅ تم الحفظ" end)
 GoPosBtn.MouseButton1Click:Connect(function() if SavedLocation then LocalPlayer.Character.HumanoidRootPart.CFrame = SavedLocation end end)
 
----------------- [ قسم الإعدادات ] ----------------
+---------------- [ قسم الإعدادات - مـصـلـح بـالـكـامـل ] ----------------
 local MenuKeyBtn = CreateButton("زر المنيو: [R-Ctrl]", UDim2.new(0.05, 0, 0.05, 0), Color3.fromRGB(45, 45, 45), SettingsMenu)
 local AirKeyBtn = CreateButton("زر المشي: [J]", UDim2.new(0.05, 0, 0.20, 0), Color3.fromRGB(45, 45, 45), SettingsMenu)
-CreateButton("إعادة اتصال (Rejoin)", UDim2.new(0.05, 0, 0.50, 0), Color3.fromRGB(0, 100, 150), SettingsMenu).MouseButton1Click:Connect(function() game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer) end)
-CreateButton("إغلاق السكريبت", UDim2.new(0.05, 0, 0.80, 0), Color3.fromRGB(150, 0, 0), SettingsMenu).MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+local RejoinBtn = CreateButton("إعادة اتصال (Rejoin)", UDim2.new(0.05, 0, 0.50, 0), Color3.fromRGB(0, 100, 150), SettingsMenu)
+local CloseHubBtn = CreateButton("إغلاق السكريبت", UDim2.new(0.05, 0, 0.80, 0), Color3.fromRGB(150, 0, 0), SettingsMenu)
+
+MenuKeyBtn.MouseButton1Click:Connect(function() MenuKeyBtn.Text = "أدخل الزر الجديد..."; WaitingForMenuKey = true end)
+AirKeyBtn.MouseButton1Click:Connect(function() AirKeyBtn.Text = "أدخل الزر الجديد..."; WaitingForAirKey = true end)
+RejoinBtn.MouseButton1Click:Connect(function() game:GetService("TeleportService"):Teleport(game.PlaceId, LocalPlayer) end)
+CloseHubBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 UserInputService.InputBegan:Connect(function(input, gpe)
-    if gpe then return end
-    if input.KeyCode == MenuKey then MainFrame.Visible = not MainFrame.Visible
-    elseif input.KeyCode == AirWalkKey then ToggleAirWalk() end
+    if gpe and not WaitingForMenuKey and not WaitingForAirKey then return end
+    if input.UserInputType == Enum.UserInputType.Keyboard then
+        if WaitingForMenuKey then
+            MenuKey = input.KeyCode
+            MenuKeyBtn.Text = "زر المنيو: ["..input.KeyCode.Name.."]"
+            WaitingForMenuKey = false
+        elseif WaitingForAirKey then
+            AirWalkKey = input.KeyCode
+            AirKeyBtn.Text = "زر المشي: ["..input.KeyCode.Name.."]"
+            WaitingForAirKey = false
+        elseif input.KeyCode == MenuKey then
+            MainFrame.Visible = not MainFrame.Visible
+        elseif input.KeyCode == AirWalkKey then
+            ToggleAirWalk()
+        end
+    end
 end)
 
----------------- [ نظام فتح القوائم و VIP ] ----------------
+---------------- [ نظام النوافذ وفتح VIP ] ----------------
 local function CloseAll() EventMenu.Visible = false; TeleportMenu.Visible = false; ESPMenu.Visible = false; SettingsMenu.Visible = false end
 OpenEvtBtn.MouseButton1Click:Connect(function() local s = not EventMenu.Visible; CloseAll(); EventMenu.Visible = s end)
 OpenTPBtn.MouseButton1Click:Connect(function() local s = not TeleportMenu.Visible; CloseAll(); TeleportMenu.Visible = s end)
 OpenESPBtn.MouseButton1Click:Connect(function() local s = not ESPMenu.Visible; CloseAll(); ESPMenu.Visible = s end)
 OpenSetBtn.MouseButton1Click:Connect(function() local s = not SettingsMenu.Visible; CloseAll(); SettingsMenu.Visible = s end)
 
--- تعديل حذف VIP بناءً على الصور
 VIPBtn.MouseButton1Click:Connect(function()
     for _,v in pairs(workspace:GetDescendants()) do 
-        if v:IsA("BasePart") and (v.Name:find("VIP") or v.Name:find("Gate") or v.Name:find("Border")) then 
-            v:Destroy() 
-        end 
+        if v:IsA("BasePart") and (v.Name:find("VIP") or v.Name:find("Gate") or v.Name:find("Border")) then v:Destroy() end 
     end
 end)
 
--- إصلاح "الأخذ السريع" لمنع الكراش
 local FastActive = false
 FastBtn.MouseButton1Click:Connect(function() 
     FastActive = not FastActive
     FastBtn.Text = FastActive and "أخذ سريع: ON" or "أخذ سريع: OFF"
-    if FastActive then 
-        for _,v in pairs(workspace:GetDescendants()) do if v:IsA("ProximityPrompt") then v.HoldDuration = 0 end end 
-    end
+    if FastActive then for _,v in pairs(workspace:GetDescendants()) do if v:IsA("ProximityPrompt") then v.HoldDuration = 0 end end end
 end)
 workspace.DescendantAdded:Connect(function(v) if FastActive and v:IsA("ProximityPrompt") then v.HoldDuration = 0 end end)
 
 AirWalkBtn.MouseButton1Click:Connect(ToggleAirWalk)
-print("DRAGON ZONE V30 FULL READY")
+print("DRAGON ZONE V30 - SETTINGS FIXED")
