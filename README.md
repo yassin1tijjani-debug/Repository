@@ -138,7 +138,7 @@ local SavePosBtn = CreateButton("حفظ المكان الحالي", UDim2.new(0.
 local GoPosBtn = CreateButton("العودة للمحفوظ", UDim2.new(0.05,0,0.83,0), Color3.fromRGB(80,0,120), TeleportMenu)
 
 local SavedLocation = nil
-SavePosBtn.MouseButton1Click:Connect(function() SavedLocation = LocalPlayer.Character.HumanoidRootPart.CFrame; SavePosBtn.Text = "✅ تم الحفظ" end)
+SavePosBtn.MouseButton1Click:Connect(function() SavedLocation = LocalPlayer.Character.HumanoidRootPart.CFrame; SavePosBtn.Text = "✅ تم החفظ" end)
 GoPosBtn.MouseButton1Click:Connect(function() if SavedLocation then LocalPlayer.Character.HumanoidRootPart.CFrame = SavedLocation end end)
 
 ---------------- [ قسم الإعدادات - تخصيص الأزرار ] ----------------
@@ -171,7 +171,25 @@ OpenESPBtn.MouseButton1Click:Connect(function() local s = not ESPMenu.Visible; C
 OpenSetBtn.MouseButton1Click:Connect(function() local s = not SettingsMenu.Visible; CloseAll(); SettingsMenu.Visible = s end)
 
 VIPBtn.MouseButton1Click:Connect(function() for _,v in pairs(game:GetDescendants()) do if v:IsA("BasePart") and (v.Name:find("VIP") or v.Name:find("Gate")) then v.CanCollide = false; v.Transparency = 0.5 end end end)
-FastBtn.MouseButton1Click:Connect(function() for _,v in pairs(game:GetDescendants()) do if v:IsA("ProximityPrompt") then v.HoldDuration = 0 end end end)
+
+-- [ تعديل وظيفة الأخذ السريع لتعمل بدون كراش ]
+local FastActive = false
+FastBtn.MouseButton1Click:Connect(function() 
+    FastActive = not FastActive
+    FastBtn.Text = FastActive and "أخذ سريع: ON" or "أخذ سريع: OFF"
+    FastBtn.BackgroundColor3 = FastActive and Color3.new(0, 0.5, 0) or Color3.fromRGB(0, 140, 0)
+    
+    if FastActive then
+        -- جعل كل شيء موجود حالياً سريعاً
+        for _,v in pairs(workspace:GetDescendants()) do if v:IsA("ProximityPrompt") then v.HoldDuration = 0 end end
+    end
+end)
+
+-- مراقبة الأشياء الجديدة (تمنع اللاج تماماً)
+workspace.DescendantAdded:Connect(function(v)
+    if FastActive and v:IsA("ProximityPrompt") then v.HoldDuration = 0 end
+end)
+
 AirWalkBtn.MouseButton1Click:Connect(ToggleAirWalk)
 
-print("DRAGON ZONE V30 FULL & FIXED READY")
+print("DRAGON ZONE V30 - ORIGINAL & STABLE LOADED")
