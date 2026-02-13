@@ -1,5 +1,5 @@
--- DRAGON ZONE HUB V30 🐉 - الـنـسـخـة الـمـصـلـحـة (قـسـم الإعـدادات)
--- [ تـم إصـلاح جـمـيـع أزرار الإعـدادات والـتـنـقـل وبـدون أي حـذف ]
+-- [[ DRAGON ZONE HUB V30 + PIT SYSTEM 🐉 ]] --
+-- تم الحفاظ على كافة الأكواد الأصلية وإضافة نظام الحفرة بنجاح
 
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
@@ -14,7 +14,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local LocalPlayer = game.Players.LocalPlayer
 
--- [ المتغيرات الرئيسية ]
+-- [ المتغيرات الرئيسية للسكريبين ]
 local AirOn = false 
 local P = nil
 local AirWalkKey = Enum.KeyCode.J 
@@ -22,13 +22,18 @@ local MenuKey = Enum.KeyCode.RightControl
 local WaitingForAirKey = false
 local WaitingForMenuKey = false
 
+-- إعدادات نظام الحفرة المضافة
+local PitKey = "F" 
+local pullSpeed = 350 
+local PitActive = false
+
 -- [1] الواجهة الرئيسية
 ScreenGui.Parent = game.CoreGui
 MainFrame.Name = "DragonZoneMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
-MainFrame.Size = UDim2.new(0, 230, 0, 440)
+MainFrame.Size = UDim2.new(0, 230, 0, 480) -- تم زيادة الحجم قليلاً للزر الإضافي
 MainFrame.Active = true
 MainFrame.Draggable = true
 
@@ -54,7 +59,7 @@ local function CreateButton(name, pos, color, parent)
     return btn
 end
 
--- [ وظيفة المشي على الهواء ]
+-- [ وظيفة المشي على الهواء - أصلية ]
 local function ToggleAirWalk()
     AirOn = not AirOn
     local btn = MainFrame:FindFirstChild("AirWalkBtn")
@@ -69,14 +74,19 @@ local function ToggleAirWalk()
 end
 
 -- [ أزرار القائمة الرئيسية ]
-local AirWalkBtn = CreateButton("المشي على الهواء: OFF", UDim2.new(0.05, 0, 0.13, 0), Color3.fromRGB(180, 0, 0), MainFrame)
+local AirWalkBtn = CreateButton("المشي على الهواء: OFF", UDim2.new(0.05, 0, 0.12, 0), Color3.fromRGB(180, 0, 0), MainFrame)
 AirWalkBtn.Name = "AirWalkBtn"
-local FastBtn = CreateButton("أخذ سريع (Instant E)", UDim2.new(0.05, 0, 0.22, 0), Color3.fromRGB(0, 140, 0), MainFrame)
-local VIPBtn = CreateButton("فتح أبواب VIP", UDim2.new(0.05, 0, 0.31, 0), Color3.fromRGB(200, 140, 0), MainFrame)
-local OpenEvtBtn = CreateButton("مراقب الأحداث ⏰ >", UDim2.new(0.05, 0, 0.45, 0), Color3.fromRGB(0, 150, 150), MainFrame)
+
+-- زر نظام الحفرة (إضافة جديدة)
+local PitBtn = CreateButton("نظام الحفرة: OFF ("..PitKey..")", UDim2.new(0.05, 0, 0.19, 0), Color3.fromRGB(45, 45, 45), MainFrame)
+PitBtn.Name = "PitBtn"
+
+local FastBtn = CreateButton("أخذ سريع (Instant E)", UDim2.new(0.05, 0, 0.27, 0), Color3.fromRGB(0, 140, 0), MainFrame)
+local VIPBtn = CreateButton("فتح أبواب VIP", UDim2.new(0.05, 0, 0.35, 0), Color3.fromRGB(200, 140, 0), MainFrame)
+local OpenEvtBtn = CreateButton("مراقب الأحداث ⏰ >", UDim2.new(0.05, 0, 0.46, 0), Color3.fromRGB(0, 150, 150), MainFrame)
 local OpenTPBtn = CreateButton("قسم التنقل 🚀 >", UDim2.new(0.05, 0, 0.58, 0), Color3.fromRGB(0, 100, 200), MainFrame)
-local OpenESPBtn = CreateButton("إعدادات الكشف ESP 👁️ >", UDim2.new(0.05, 0, 0.71, 0), Color3.fromRGB(120, 0, 120), MainFrame)
-local OpenSetBtn = CreateButton("إعدادات الماب ⚙️ >", UDim2.new(0.05, 0, 0.84, 0), Color3.fromRGB(60, 60, 60), MainFrame)
+local OpenESPBtn = CreateButton("إعدادات الكشف ESP 👁️ >", UDim2.new(0.05, 0, 0.70, 0), Color3.fromRGB(120, 0, 120), MainFrame)
+local OpenSetBtn = CreateButton("إعدادات الماب ⚙️ >", UDim2.new(0.05, 0, 0.82, 0), Color3.fromRGB(60, 60, 60), MainFrame)
 
 local function StyleMenu(menu)
     menu.Parent = MainFrame; menu.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -85,7 +95,30 @@ local function StyleMenu(menu)
 end
 StyleMenu(EventMenu); StyleMenu(TeleportMenu); StyleMenu(ESPMenu); StyleMenu(SettingsMenu)
 
----------------- [ قسم مراقب الأحداث ] ----------------
+-- [ وظيفة نظام الحفرة المدمجة ]
+PitBtn.MouseButton1Click:Connect(function()
+    PitActive = not PitActive
+    PitBtn.Text = PitActive and "نظام الحفرة: ON ✅" or "نظام الحفرة: OFF ("..PitKey..")"
+    PitBtn.BackgroundColor3 = PitActive and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
+end)
+
+RunService.Heartbeat:Connect(function()
+    if PitActive then
+        local char = LocalPlayer.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        if root then
+            local params = RaycastParams.new()
+            params.FilterDescendantsInstances = {char}
+            local result = workspace:Raycast(root.Position, Vector3.new(0, -8, 0), params)
+            if not result then
+                root.Velocity = Vector3.new(0, -pullSpeed, 0)
+                root.CFrame = root.CFrame * CFrame.new(0, -1.5, 0)
+            end
+        end
+    end
+end)
+
+---------------- [ قسم مراقب الأحداث - أصلي ] ----------------
 local SkyText = Instance.new("TextLabel", EventMenu)
 SkyText.TextSize = 22; SkyText.Font = Enum.Font.SourceSansBold; SkyText.TextColor3 = Color3.new(0,1,1); SkyText.Size = UDim2.new(1,0,0.5,0); SkyText.BackgroundTransparency = 1
 local MoneyText = Instance.new("TextLabel", EventMenu)
@@ -99,7 +132,7 @@ task.spawn(function()
     end
 end)
 
----------------- [ قسم إعدادات ESP ] ----------------
+---------------- [ قسم إعدادات ESP - أصلي ] ----------------
 local ESP_Color = Color3.fromRGB(255, 0, 0)
 local NameESP_Active = false
 local BoxESP_Active = false
@@ -127,7 +160,7 @@ BoxToggle.MouseButton1Click:Connect(function() BoxESP_Active = not BoxESP_Active
 ClearESP.MouseButton1Click:Connect(function() for _, p in pairs(game.Players:GetPlayers()) do if p.Character then if p.Character.Head:FindFirstChild("DragonName") then p.Character.Head.DragonName:Destroy() end if p.Character:FindFirstChild("DragonBox") then p.Character.DragonBox:Destroy() end end end end)
 RunService.RenderStepped:Connect(function() for _, p in pairs(game.Players:GetPlayers()) do ApplyESP(p) end end)
 
----------------- [ قسم التنقل ] ----------------
+---------------- [ قسم التنقل - أصلي ] ----------------
 local function TPTo(offset) LocalPlayer.Character.HumanoidRootPart.CFrame *= CFrame.new(0, offset, 0) end
 CreateButton("الطابق 1 (صعود)", UDim2.new(0.05,0,0.05,0), Color3.fromRGB(0,80,150), TeleportMenu).MouseButton1Click:Connect(function() TPTo(18) end)
 CreateButton("الطابق 2 (صعود)", UDim2.new(0.05,0,0.18,0), Color3.fromRGB(0,80,150), TeleportMenu).MouseButton1Click:Connect(function() TPTo(36) end)
@@ -140,7 +173,7 @@ local GoPosBtn = CreateButton("العودة للمحفوظ", UDim2.new(0.05,0,0.
 SavePosBtn.MouseButton1Click:Connect(function() SavedLocation = LocalPlayer.Character.HumanoidRootPart.CFrame; SavePosBtn.Text = "✅ تم الحفظ" end)
 GoPosBtn.MouseButton1Click:Connect(function() if SavedLocation then LocalPlayer.Character.HumanoidRootPart.CFrame = SavedLocation end end)
 
----------------- [ قسم الإعدادات - مـصـلـح بـالـكـامـل ] ----------------
+---------------- [ قسم الإعدادات - أصلي ] ----------------
 local MenuKeyBtn = CreateButton("زر المنيو: [R-Ctrl]", UDim2.new(0.05, 0, 0.05, 0), Color3.fromRGB(45, 45, 45), SettingsMenu)
 local AirKeyBtn = CreateButton("زر المشي: [J]", UDim2.new(0.05, 0, 0.20, 0), Color3.fromRGB(45, 45, 45), SettingsMenu)
 local RejoinBtn = CreateButton("إعادة اتصال (Rejoin)", UDim2.new(0.05, 0, 0.50, 0), Color3.fromRGB(0, 100, 150), SettingsMenu)
@@ -166,11 +199,15 @@ UserInputService.InputBegan:Connect(function(input, gpe)
             MainFrame.Visible = not MainFrame.Visible
         elseif input.KeyCode == AirWalkKey then
             ToggleAirWalk()
+        elseif input.KeyCode == Enum.KeyCode[PitKey:upper()] then
+             PitActive = not PitActive
+             PitBtn.Text = PitActive and "نظام الحفرة: ON ✅" or "نظام الحفرة: OFF ("..PitKey..")"
+             PitBtn.BackgroundColor3 = PitActive and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(170, 0, 0)
         end
     end
 end)
 
----------------- [ نظام النوافذ وفتح VIP ] ----------------
+---------------- [ نظام النوافذ وفتح VIP - أصلي ] ----------------
 local function CloseAll() EventMenu.Visible = false; TeleportMenu.Visible = false; ESPMenu.Visible = false; SettingsMenu.Visible = false end
 OpenEvtBtn.MouseButton1Click:Connect(function() local s = not EventMenu.Visible; CloseAll(); EventMenu.Visible = s end)
 OpenTPBtn.MouseButton1Click:Connect(function() local s = not TeleportMenu.Visible; CloseAll(); TeleportMenu.Visible = s end)
@@ -192,4 +229,4 @@ end)
 workspace.DescendantAdded:Connect(function(v) if FastActive and v:IsA("ProximityPrompt") then v.HoldDuration = 0 end end)
 
 AirWalkBtn.MouseButton1Click:Connect(ToggleAirWalk)
-print("DRAGON ZONE V30 - SETTINGS FIXED")
+print("DRAGON ZONE V30 + PIT SYSTEM - FULL INTEGRATION DONE")
